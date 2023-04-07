@@ -1,6 +1,7 @@
 $(document).ready(handleReady);
 
 let playerCount = 1;
+let guessCount = 0;
 
 function handleReady() {
   console.log("jquery is loaded!")
@@ -48,6 +49,8 @@ function submitGuesses(event) {
   
   let newGuesses = [];
 
+  guessCount++
+
   for (let i = 1; i <= playerCount; i++) {
     let playerGuess = {
       name: `Player ${i}`,
@@ -57,23 +60,59 @@ function submitGuesses(event) {
     newGuesses.push(playerGuess);
 
     $(`#Player${i}`).val('')
+
+    $.ajax({
+      method: 'POST',
+      url: '/playerGuesses',
+      data: playerGuess
+    }).then(function(response){
+      // Will need to build out function to bring DOM into sync
+      // getGuesses();
+    }).catch(function(error){
+      alert('issues with POST, try again later!')
+    })
   }
 
+  getGuesses();
   console.log(newGuesses);
-  $.ajax({
-    method: 'POST',
-    url: '/playerGuesses',
-    data: newGuesses
-  }).then(function(response){
-    // Will need to build out function to bring DOM into sync
-    getGuesses();
-  }).catch(function(error){
-    alert('issues with POST, try again later!')
-  })
+
 
 }// end submitGuesses
 
 
 function getGuesses() {
   console.log('in getGuesses');
+
+  $('#Guess-Results').append(`
+    <div id="guessTracker${guessCount}">
+      <p>Guess # ${guessCount}</p>
+    </div>
+  `)
+
+  $.ajax({
+    method: 'GET',
+    url: '/playerGuesses'
+  }).then(function(guessResponse){
+    for(let guess of guessResponse){
+      console.log(`name -->${guess.name} guess -->${guess.guess}`);
+      $(`#guessTracker${guessCount}`).append(`
+          <li>${guess.name} - ${guess.guess}</li>
+      `)
+    }// end for...of loop
+  }) //previousRound()
 }
+/*
+function previousRounds(){
+  $.ajax({
+    method: 'Get'
+    url: blah
+  }).then(function(roundsrespon){
+    for (let blj of bbl){
+      $('#dfdaf').append(`
+      previous values`)
+      
+      clear out the values of the array
+    }
+  })
+}
+*/
